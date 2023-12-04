@@ -10,20 +10,22 @@ public class MySensor implements SensorEventListener {
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private Sensor gyroscope;
+    private Sensor gravity;
 
     // Constructor
     public MySensor(Context context) {
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
 
-        // Get the accelerometer and gyroscope sensors
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        gravity = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
     }
 
     // Register sensor listeners
     public void registerSensors() {
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, gravity, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     // Unregister sensor listeners
@@ -36,12 +38,15 @@ public class MySensor implements SensorEventListener {
     public void onSensorChanged(SensorEvent event) {
         // Handle sensor data here
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            float[] accelerometerValues = event.values;
-            System.out.println("acc: " + accelerometerValues);
-            // Process accelerometer data
+            float xAxis = event.values[0];
+            float yAxis = event.values[1];
+            float zAxis = event.values[2];
+            System.out.println(
+                    "x: " + xAxis + ", y: " + yAxis + ", z: " + zAxis
+            );
         } else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
             float[] gyroscopeValues = event.values;
-            System.out.println("gyro: " + gyroscopeValues);
+            // System.out.println("gyro: " + gyroscopeValues);
             // Process gyroscope data
         } else if (event.sensor.getType() == Sensor.TYPE_GRAVITY) {
             float[] gravityValues = event.values;
