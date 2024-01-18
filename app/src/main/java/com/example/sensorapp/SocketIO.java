@@ -11,8 +11,13 @@ public class SocketIO {
    SocketIO(){
       try {
          System.out.println("Connecting to socket");
-         socket = IO.socket("wss://medexto.com");
+         socket = IO.socket("http://192.168.100.172:8000/");
+         socket.connect();
 
+         System.out.println("conected: " + socket.connected());
+         System.out.println(socket);
+
+         socket.emit("start", "je");
          onMessage = new Emitter.Listener() {
             @Override
             public void call(Object... args) {
@@ -21,7 +26,7 @@ public class SocketIO {
          };
 
 
-      } catch (URISyntaxException e){
+      } catch (Exception e){
          e.printStackTrace();
       }
    }
