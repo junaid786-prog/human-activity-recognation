@@ -50,12 +50,9 @@ public class Sensor extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //socketHelper.connect();
-                //sensorManagerHelper.registerSensors();
-
+                // 1. connect to socket
                 try {
-
-                    socket = IO.socket("http://192.168.100.172:8000");
-
+                    socket = IO.socket("http://192.168.1.2:8000");
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
@@ -76,10 +73,14 @@ public class Sensor extends AppCompatActivity {
                             });
                         }
                     });
+
+                    // 2. After socket connected start sending data
                     socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
                         @Override
                         public void call(Object... args) {
                             System.out.println("Socket connected");
+                            if (socket != null && socket.connected())
+                                sensorManagerHelper.registerSensors(socket);
                         }
                     });
 
@@ -101,7 +102,7 @@ public class Sensor extends AppCompatActivity {
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                socket.emit("setup", "hello", new Ack() {
+                socket.emit("stop", "i want to stop", new Ack() {
                     @Override
                     public void call(Object... args) {
                         // The callback is invoked when the server acknowledges the event
@@ -114,11 +115,19 @@ public class Sensor extends AppCompatActivity {
                         //sensorManagerHelper.unregisterSensors();
                     }
                 });
-                //sensorManagerHelper.unregisterSensors();
+                socket.disconnect();
+                sensorManagerHelper.unregisterSensors();
             }
 
         });
+    }
 
+    private void sendData(Object data){
+        if(socket.connected()){
+            socket.emit("sensor_data", data);
+        } else {
+            System.out.println("Socket not connected");
+        }
     }
 
     @Override
