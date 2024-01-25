@@ -1,5 +1,6 @@
 package com.example.sensorapp;
 
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -12,15 +13,17 @@ import org.json.JSONObject;
 
 import io.socket.client.Socket;
 
-public class MySensor implements SensorEventListener {
+public class MySensorManager implements SensorEventListener {
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private Sensor gyroscope;
     private Sensor gravity;
 
     private Socket socket;
+    MultiplayerConnect.ConnectedThread connectedThread;
     // Constructor
-    public MySensor(Context context) {
+    public MySensorManager(Context context) {
+        //this.connectedThread = connectedThread;
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
 
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -29,8 +32,9 @@ public class MySensor implements SensorEventListener {
     }
 
     // Register sensor listeners
-    public void registerSensors(Socket socket) {
-        this.socket = socket;
+    public void registerSensors(MultiplayerConnect.ConnectedThread connectedThread) {
+        //this.socket = socket;
+        this.connectedThread = connectedThread;
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(this, gravity, SensorManager.SENSOR_DELAY_NORMAL);
@@ -50,25 +54,14 @@ public class MySensor implements SensorEventListener {
         float[] values = event.values;
         SensorData data = new SensorData(sensor_type, values[0], values[1], values[2]);
         String jsonData = new Gson().toJson(data);
-        System.out.println(jsonData);
-        if (socket != null && socket.connected()){
-            socket.emit("sensor_data", new Gson().toJson(data));
+        //System.out.println(jsonData);
+        if (connectedThread != null){
+            //socket.emit("sensor_data", new Gson().toJson(data));
+            System.out.println("My sensory data");
+            connectedThread.sendData(jsonData);
         } else {
             System.out.println("Socket not connected 2");
         }
-//        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-//            float xAxis = event.values[0];
-//            float yAxis = event.values[1];
-//            float zAxis = event.values[2];
-//            System.out.println(
-//                    "x: " + xAxis + ", y: " + yAxis + ", z: " + zAxis
-//            );
-//        } else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-//            float[] gyroscopeValues = event.values;
-//        } else if (event.sensor.getType() == Sensor.TYPE_GRAVITY) {
-//            float[] gravityValues = event.values;
-//            System.out.println("gyro: " + gravityValues);
-//        }
     }
 
     @Override
@@ -78,28 +71,4 @@ public class MySensor implements SensorEventListener {
     }
 }
 
-class SensorData {
-    private int type;
-    private float x;
-    private float y;
-    private float z;
 
-    public SensorData(int type, float x, float y, float z) {
-        this.type = type;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
-
-    // Getter methods for x, y, and z
-
-    @Override
-    public String toString() {
-        return "{" +
-                "type='" + type + '\'' +
-                ", x=" + x +
-                ", y=" + y +
-                ", z=" + z +
-                '}';
-    }
-}

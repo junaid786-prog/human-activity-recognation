@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Paired Devices" />
+
+    <ListView
+        android:id="@+id/lv_paired_devices"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:layout_weight="1"></ListView>
+
+    <TextView
+        android:id="@+id/receivedMessageTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Received Message: "
+        android:textColor="@android:color/black"
+        android:textSize="18sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Make sure Device is paired" />
+
+    <EditText
+        android:id="@+id/edit_server_ip_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Server IP"
+        android:inputType="text"
+        android:maxLines="1" />
+    <Button
+        android:id="@+id/connect_to_socket_server"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Socket Server" />
+
+    <Button
+        android:id="@+id/send_blutooth_data"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Send Data" />
+
+    <Button
+        android:id="@+id/stop_send_bt_data"
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:text="STOP SENDING" />
+
+</LinearLayout>
