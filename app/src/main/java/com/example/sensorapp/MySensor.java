@@ -48,7 +48,7 @@ public class MySensor implements SensorEventListener {
         int sensor_type = event.sensor.getType();
 
         float[] values = event.values;
-        SensorData data = new SensorData(sensor_type, values[0], values[1], values[2]);
+        SensorData data = new SensorData("", sensor_type, values[0], values[1], values[2]);
         String jsonData = new Gson().toJson(data);
         System.out.println(jsonData);
         if (socket != null && socket.connected()){
@@ -79,12 +79,14 @@ public class MySensor implements SensorEventListener {
 }
 
 class SensorData {
+    private String device;
     private int type;
     private float x;
     private float y;
     private float z;
 
-    public SensorData(int type, float x, float y, float z) {
+    public SensorData(String device, int type, float x, float y, float z) {
+        this.device = device;
         this.type = type;
         this.x = x;
         this.y = y;

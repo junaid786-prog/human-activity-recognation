@@ -18,7 +18,7 @@ public class MySensorManager implements SensorEventListener {
     private Sensor accelerometer;
     private Sensor gyroscope;
     private Sensor gravity;
-
+    private String deviceName;
     private Socket socket;
     MultiplayerConnect.ConnectedThread connectedThread;
     // Constructor
@@ -32,9 +32,10 @@ public class MySensorManager implements SensorEventListener {
     }
 
     // Register sensor listeners
-    public void registerSensors(MultiplayerConnect.ConnectedThread connectedThread) {
+    public void registerSensors(MultiplayerConnect.ConnectedThread connectedThread, String deviceName) {
         //this.socket = socket;
         this.connectedThread = connectedThread;
+        this.deviceName = deviceName;
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(this, gravity, SensorManager.SENSOR_DELAY_NORMAL);
@@ -52,7 +53,7 @@ public class MySensorManager implements SensorEventListener {
         int sensor_type = event.sensor.getType();
 
         float[] values = event.values;
-        SensorData data = new SensorData(sensor_type, values[0], values[1], values[2]);
+        SensorData data = new SensorData(deviceName, sensor_type, values[0], values[1], values[2]);
         String jsonData = new Gson().toJson(data);
         //System.out.println(jsonData);
         if (connectedThread != null){

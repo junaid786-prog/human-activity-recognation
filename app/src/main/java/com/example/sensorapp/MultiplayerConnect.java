@@ -68,6 +68,8 @@ public class MultiplayerConnect extends AppCompatActivity {
     private Button connectToSocket;
     private TextView receivedMessageTextView;
     private EditText editTextServerIP;
+    private EditText editDeviceName;
+
 
     // Sensor Manager
     private MySensorManager sensorManagerHelper;
@@ -94,13 +96,14 @@ public class MultiplayerConnect extends AppCompatActivity {
         receivedMessageTextView = findViewById(R.id.receivedMessageTextView);
         connectToSocket = findViewById(R.id.connect_to_socket_server);
         editTextServerIP = findViewById(R.id.edit_server_ip_input);
+        editDeviceName = findViewById(R.id.edit_device_name_input);
         mainHandler = new Handler(Looper.getMainLooper());
 
         sendMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(connectedThread != null) {
-                    sensorManagerHelper.registerSensors(connectedThread);
+                    sensorManagerHelper.registerSensors(connectedThread, editDeviceName.getText().toString());
                 } else {
                     Toast.makeText(MultiplayerConnect.this, "Hello can not send data", Toast.LENGTH_SHORT).show();
                 }
@@ -112,8 +115,10 @@ public class MultiplayerConnect extends AppCompatActivity {
             public void onClick(View view) {
                 if(sensorManagerHelper != null){
                     sensorManagerHelper.unregisterSensors();
-                    socket.emit("stop", "stop it");
-                    socket.close();
+                    if (socket != null){
+                        socket.emit("stop", "stop it");
+                        socket.close();
+                    }
                 }
             }
         });
