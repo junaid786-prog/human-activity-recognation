@@ -20,7 +20,7 @@ public class MySensorManager implements SensorEventListener {
     private Sensor gravity;
     private String deviceName;
     private Socket socket;
-    MultiplayerConnect.ConnectedThread connectedThread;
+    BluetoothHandler.ConnectedThread connectedThread;
     // Constructor
     public MySensorManager(Context context) {
         //this.connectedThread = connectedThread;
@@ -28,11 +28,11 @@ public class MySensorManager implements SensorEventListener {
 
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        gravity = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        gravity = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
     }
 
     // Register sensor listeners
-    public void registerSensors(MultiplayerConnect.ConnectedThread connectedThread, String deviceName) {
+    public void registerSensors(BluetoothHandler.ConnectedThread connectedThread, String deviceName) {
         //this.socket = socket;
         this.connectedThread = connectedThread;
         this.deviceName = deviceName;
@@ -59,7 +59,7 @@ public class MySensorManager implements SensorEventListener {
         if (connectedThread != null){
             //socket.emit("sensor_data", new Gson().toJson(data));
             System.out.println("My sensory data");
-            connectedThread.sendData(jsonData);
+            connectedThread.write(jsonData.getBytes());
         } else {
             System.out.println("Socket not connected 2");
         }
