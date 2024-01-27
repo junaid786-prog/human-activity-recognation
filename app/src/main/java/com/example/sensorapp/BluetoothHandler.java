@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.widget.Toast;
@@ -23,14 +24,6 @@ import java.util.UUID;
 
 public class BluetoothHandler {
 
-    static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    private static final int REQUEST_ENABLE_BT = 1;
-    static final int MESSAGE_READ = 0;
-    static final int MESSAGE_WRITE = 1;
-    static final int CONNECTING = 2;
-    static final int CONNECTED = 3;
-    static final int PAIRED_DEVICES = 4;
-    static final int NO_SOCKET_FOUND = 5;
     private BluetoothAdapter bluetoothAdapter;
     private AcceptThread acceptThread;
     private ConnectThread connectThread;
@@ -48,23 +41,36 @@ public class BluetoothHandler {
     private void initBluetooth() {
         if (!checkBluetoothPermissions()) {
             requestBluetoothPermissions();
+        } else {
+            checkAndEnableBluetooth();
         }
+    }
 
+    public void checkAndEnableBluetooth() {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
-            showToast("Your device doesn't support Bluetooth.");
+            handler.obtainMessage(Constants.SHOW_LOG, "Your device doesn't support Bluetooth.");
         } else {
             if (!bluetoothAdapter.isEnabled()) {
-                showToast("Bluetooth is not enabled.");
+                requestEnableBluetooth();
             } else {
                 if (checkBluetoothConnectPermission()) {
                     // Permissions granted, proceed with your initialization
-                    handler.obtainMessage(PAIRED_DEVICES).sendToTarget();
+                    handler.obtainMessage(Constants.PAIRED_DEVICES).sendToTarget();
                     startAcceptingConnection();
+                } else {
+                    handler.obtainMessage(Constants.SHOW_LOG, "Bluetooth connect permission not granted.");
                 }
             }
         }
     }
+
+    private void requestEnableBluetooth() {
+        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        //if(checkBluetoothConnectPermission())
+        ((Activity) context).startActivityForResult(enableBtIntent, Constants.REQUEST_ENABLE_BT);
+    }
+
 
     public boolean checkBluetoothPermissions() {
         return ContextCompat.checkSelfPermission(context, android.Manifest.permission.BLUETOOTH) ==
@@ -85,18 +91,18 @@ public class BluetoothHandler {
     public void requestBluetoothPermissions() {
         ActivityCompat.requestPermissions((Activity) context,
                 new String[]{android.Manifest.permission.BLUETOOTH, android.Manifest.permission.BLUETOOTH_ADMIN},
-                REQUEST_ENABLE_BT);
+                Constants.REQUEST_ENABLE_BT);
     }
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_ENABLE_BT) {
+        if (requestCode == Constants.REQUEST_ENABLE_BT) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
                     && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                 // Permissions granted, you can proceed
                 // Note: You might want to notify the BluetoothHandler or the activity
                 // about the permission result to continue your initialization.
             } else {
-                Toast.makeText(context, "Bluetooth permissions not granted. Exiting.", Toast.LENGTH_SHORT).show();
+                handler.obtainMessage(Constants.SHOW_LOG, -1, -1, "Permsission not granted");
                 ((Activity) context).finish();
             }
         }
@@ -154,7 +160,7 @@ public class BluetoothHandler {
             BluetoothServerSocket tmp = null;
             try {
                 if(checkBluetoothConnectPermission()) {
-                    tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord("NAME", MY_UUID);
+                    tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord("NAME", Constants.MY_UUID);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -172,7 +178,7 @@ public class BluetoothHandler {
                 }
 
                 if (socket != null) {
-                    handler.obtainMessage(CONNECTED).sendToTarget();
+                    handler.obtainMessage(Constants.CONNECTED).sendToTarget();
                     connectedThread = new ConnectedThread(socket);
                     connectedThread.start();
                 }
@@ -198,7 +204,7 @@ public class BluetoothHandler {
 
             try {
                 if (checkBluetoothConnectPermission()) {
-                    tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
+                    tmp = device.createRfcommSocketToServiceRecord(Constants.MY_UUID);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -208,7 +214,7 @@ public class BluetoothHandler {
         }
 
         public void run() {
-            handler.obtainMessage(CONNECTING).sendToTarget();
+            handler.obtainMessage(Constants.CONNECTING).sendToTarget();
 
             try {
                 if(checkBluetoothConnectPermission()) {
@@ -265,7 +271,7 @@ public class BluetoothHandler {
                 try {
                     bytes = mmInStream.read(buffer);
                     String receivedMessage = new String(buffer, 0, bytes);
-                    handler.obtainMessage(MESSAGE_READ, bytes, -1, receivedMessage).sendToTarget();
+                    handler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, receivedMessage).sendToTarget();
                 } catch (IOException e) {
                     break;
                 }

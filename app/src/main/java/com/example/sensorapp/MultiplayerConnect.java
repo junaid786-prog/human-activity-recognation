@@ -1,6 +1,9 @@
 package com.example.sensorapp;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,6 +20,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import java.util.Set;
 
@@ -50,6 +54,20 @@ public class MultiplayerConnect extends AppCompatActivity {
         initializeClicks();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == Constants.REQUEST_ENABLE_BT) {
+            if (resultCode == Activity.RESULT_OK) {
+                // Bluetooth has been successfully enabled
+                bluetoothHandler.checkAndEnableBluetooth();
+            } else {
+                Toast.makeText(this, "Bluetooth is required for this application. Exiting.", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }
+    }
     private void initializeLayout() {
         lv_paired_devices = findViewById(R.id.lv_paired_devices);
         sendMessageButton = findViewById(R.id.send_blutooth_data);
@@ -65,23 +83,25 @@ public class MultiplayerConnect extends AppCompatActivity {
             @Override
             public void handleMessage(@NonNull Message msg_type) {
                 switch (msg_type.what) {
-                    case BluetoothHandler.MESSAGE_READ:
+                    case Constants.MESSAGE_READ:
                         String receivedMessage = (String) msg_type.obj;
                         socketHandler.sendMessage("sensor_data", receivedMessage);
                         updateReceivedMessage(receivedMessage);
                         break;
-                    case BluetoothHandler.CONNECTED:
+                    case Constants.CONNECTED:
                         Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
                         break;
-                    case BluetoothHandler.CONNECTING:
+                    case Constants.CONNECTING:
                         Toast.makeText(getApplicationContext(), "Connecting...", Toast.LENGTH_SHORT).show();
                         break;
-                    case BluetoothHandler.NO_SOCKET_FOUND:
+                    case Constants.NO_SOCKET_FOUND:
                         Toast.makeText(getApplicationContext(), "No socket found", Toast.LENGTH_SHORT).show();
                         break;
-                    case BluetoothHandler.PAIRED_DEVICES:
-                        // Update your UI with paired devices
+                    case Constants.PAIRED_DEVICES:
                         updatePairedDevices();
+                        break;
+                    case Constants.SHOW_LOG:
+                        Toast.makeText(getApplicationContext(), msg_type.obj.toString(), Toast.LENGTH_SHORT).show();
                         break;
                 }
             }
@@ -122,7 +142,7 @@ public class MultiplayerConnect extends AppCompatActivity {
         stopDataButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(sensorManagerHelper != null){
+                if (sensorManagerHelper != null) {
                     sensorManagerHelper.unregisterSensors();
                     socketHandler.stop();
                 }
@@ -135,7 +155,7 @@ public class MultiplayerConnect extends AppCompatActivity {
                 String serverIP = editTextServerIP.getText().toString();
                 try {
                     socketHandler.connect(serverIP);
-                } catch (Exception e){
+                } catch (Exception e) {
                     System.out.println("Error occurred: " + e.getMessage());
                 }
             }
@@ -146,8 +166,10 @@ public class MultiplayerConnect extends AppCompatActivity {
     private void updateReceivedMessage(String message) {
         receivedMessageTextView.setText("Received: " + message);
     }
+
     private void updatePairedDevices() {
         Set<BluetoothDevice> pairedDevices = bluetoothHandler.getPairedDevices();
+        System.out.println(pairedDevices);
         ArrayAdapter<String> adapter_paired_devices = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
 
         for (BluetoothDevice device : pairedDevices) {
