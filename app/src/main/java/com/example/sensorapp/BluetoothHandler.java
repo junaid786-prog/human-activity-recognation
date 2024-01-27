@@ -8,8 +8,6 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
